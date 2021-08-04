@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from F2M_model_V14 import *
+#from F2M_model_V14_2 import *
 from random import shuffle, random
 from collections import Counter
 
@@ -128,25 +129,19 @@ def cal_loss(A2B_G_model, B2A_G_model, A_discriminator, B_discriminator,
         # 나이에 대한 distance를 구하는곳
         return_loss = 0.
         for i in range(FLAGS.batch_size):   # 기존의 데이터로하려면 compare label을 하나 더 만들어야 한다 기억해!!!!
-            a = tf.reduce_mean(fake_A_[i, :, :, 3:], [0,1])
-            energy_ft = tf.reduce_sum(tf.abs(tf.reduce_mean(fake_A_[i, :, :, 3:], [0,1]) - tf.reduce_mean(fake_A[:, :, :, 3:], [1,2])), 1)
-            energy_ft2 = tf.reduce_sum(tf.abs(tf.reduce_mean(fake_B_[i, :, :, 3:], [0,1]) - tf.reduce_mean(fake_B[:, :, :, 3:], [1,2])), 1)   # 이걸 새로운 compare label에 대입해야함
-            
-            compare_label = tf.subtract(B_batch_labels, B_batch_labels[i]) # real_B_mid fake_B_mid
-            compare_label2 = tf.subtract(A_batch_labels, A_batch_labels[i])  # real_A_mid fake_A_mid
+            energy_ft = tf.reduce_sum(tf.abs(tf.reduce_mean(fake_A[i, :, :, 3:], [0,1]) - tf.reduce_mean(fake_B[:, :, :, 3:], [1,2])), 1)
+            energy_ft2 = tf.reduce_sum(tf.abs(tf.reduce_mean(fake_A_[i, :, :, 3:], [0,1]) - tf.reduce_mean(fake_B_[:, :, :, 3:], [1,2])), 1)
+            compare_label = tf.subtract(A_batch_labels, B_batch_labels[i])
 
             T = 4
             label_buff = tf.less(tf.abs(compare_label), T)
             label_cast = tf.cast(label_buff, tf.float32)
 
-            label_buff2 = tf.less(tf.abs(compare_label2), T)
-            label_cast2 = tf.cast(label_buff2, tf.float32)
-
             realB_fakeB_loss = label_cast * increase_func(energy_ft) \
                 + (1 - label_cast) * 5 * decreas_func(energy_ft)
 
-            realA_fakeA_loss = label_cast2 * increase_func(energy_ft2) \
-                + (1 - label_cast2) * 5 * decreas_func(energy_ft2)
+            realA_fakeA_loss = label_cast * increase_func(energy_ft2) \
+                + (1 - label_cast) * 5 * decreas_func(energy_ft2)
 
             # A와 B 나이가 다르면 감소함수, 같으면 증가함수
 
@@ -291,7 +286,7 @@ def main():
                 count += 1
 
     else:
-        if FLAGS.test_dir == "A2B":
+        if FLAGS.test_dir == "A2B": # train data는 A가 아닌 B로 해야함
             A_train_data = np.loadtxt(FLAGS.A_txt_path, dtype="<U100", skiprows=0, usecols=0)
             A_train_data = [FLAGS.A_img_path + data for data in A_train_data]
             A_train_label = np.loadtxt(FLAGS.A_txt_path, dtype=np.int32, skiprows=0, usecols=1)
@@ -338,7 +333,7 @@ def main():
 
 
 
-        if FLAGS.test_dir == "B2A":
+        if FLAGS.test_dir == "B2A": # train data 가 B가 아닌 A로 해야함
             B_train_data = np.loadtxt(FLAGS.B_txt_path, dtype="<U100", skiprows=0, usecols=0)
             B_train_data = [FLAGS.B_img_path + data for data in B_train_data]
             B_train_label = np.loadtxt(FLAGS.B_txt_path, dtype=np.int32, skiprows=0, usecols=1)
