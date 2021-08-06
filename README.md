@@ -5,5 +5,10 @@
 * 나이에 대한 loss 새롭게 구성 (F2M_model_V9_2 와 동일)
 * Content loss 추가 설계 (Content란 영상의 주성분이 아닌 그 외 배경성분이라고 가정)
 
+## Model architecture
+![f1](https://github.com/Kimyuhwanpeter/F2M_Version_V14/blob/main/figure1.png)
+
+## Content loss
+![f2](https://github.com/Kimyuhwanpeter/F2M_Version_V14/blob/main/figure2.png)
 
 
