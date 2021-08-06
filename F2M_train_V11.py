@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
-from F2M_model_V14 import *
-#from F2M_model_V14_2 import *
+#from F2M_model_V14 import *
+from F2M_model_V14_2 import *
 from random import shuffle, random
 from collections import Counter
 
@@ -198,6 +198,10 @@ def cal_loss(A2B_G_model, B2A_G_model, A_discriminator, B_discriminator,
 
 def main():
 
+    pre_trained_encoder1 = tf.keras.applications.ResNet50V2(include_top=False, input_shape=(FLAGS.img_size, FLAGS.img_size, 3))
+    pre_trained_encoder2 = tf.keras.applications.VGG16(include_top=False, input_shape=(FLAGS.img_size, FLAGS.img_size, 3))
+    pre_trained_encoder2.summary()
+
     A2B_G_model = F2M_generator(input_shape=(FLAGS.img_size, FLAGS.img_size, 3))
     B2A_G_model = F2M_generator(input_shape=(FLAGS.img_size, FLAGS.img_size, 3))
     B_discriminator = F2M_discriminator(input_shape=(FLAGS.tar_size, FLAGS.tar_size, 3))
@@ -213,6 +217,17 @@ def main():
         ckpt_manager = tf.train.CheckpointManager(ckpt, FLAGS.pre_checkpoint_path, 5)
         if ckpt_manager.latest_checkpoint:
             ckpt.restore(ckpt_manager.latest_checkpoint)
+            print("Restored!!")
+    else:
+        A2B_G_model.get_layer("conv_en_1").set_weights(pre_trained_encoder1.get_layer("conv1_conv").get_weights())
+        B2A_G_model.get_layer("conv_en_1").set_weights(pre_trained_encoder1.get_layer("conv1_conv").get_weights())
+    
+        A2B_G_model.get_layer("conv_en_3").set_weights(pre_trained_encoder2.get_layer("block2_conv1").get_weights())
+        B2A_G_model.get_layer("conv_en_3").set_weights(pre_trained_encoder2.get_layer("block2_conv1").get_weights())
+
+        A2B_G_model.get_layer("conv_en_5").set_weights(pre_trained_encoder2.get_layer("block3_conv1").get_weights())
+        B2A_G_model.get_layer("conv_en_5").set_weights(pre_trained_encoder2.get_layer("block3_conv1").get_weights())
+
 
     if FLAGS.train:
         count = 0
