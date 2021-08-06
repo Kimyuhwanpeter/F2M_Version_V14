@@ -11,4 +11,10 @@
 ## Content loss
 ![f2](https://github.com/Kimyuhwanpeter/F2M_Version_V14/blob/main/figure2.png)
 
+# 서브컴으로 실험했을 때, 학습 샘플
+![f3](https://github.com/Kimyuhwanpeter/F2M_Version_V14/blob/main/figure3.png)
+
+# 본컴으로 실험했을 때, 학습 샘플
+![f4](https://github.com/Kimyuhwanpeter/F2M_Version_V14/blob/main/figure4.png)
+
 
