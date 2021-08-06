@@ -96,7 +96,7 @@ def decode_residual_block(input, dilation=1, filters=256):
     return (h*h_attenion_layer) + input
 
 def F2M_generator(input_shape=(256, 256, 3)):
-
+    # 좀더 새로운 아이디어는 없을까??    # encoder에 pre-trained layer를 넣자    (서브컴과 본컴에는 추가하지 않았음!)
     h = inputs = tf.keras.Input(input_shape)
     first_grad_x, first_grad_y = tf.image.image_gradients(h)
     first_grad = tf.add(tf.abs(first_grad_x), tf.abs(first_grad_y))
@@ -113,33 +113,33 @@ def F2M_generator(input_shape=(256, 256, 3)):
     third_grad = tf.image.resize(first_grad, [64, 64])
 
     h = tf.keras.layers.ZeroPadding2D((3,3))(h)
-    h = tf.keras.layers.Conv2D(filters=64, kernel_size=7, use_bias=False,
-                               kernel_regularizer=l1_l2, activity_regularizer=l1)(h)
-    h = InstanceNormalization()(h)  # [256, 256, 64]
+    h = tf.keras.layers.Conv2D(filters=64, kernel_size=7, use_bias=True,
+                               kernel_regularizer=l1_l2, activity_regularizer=l1, name="conv_en_1")(h)
+    h = InstanceNormalization()(h)  # [256, 256, 64] [7, 7, 3, 64]
     h = tf.keras.layers.ReLU()(h)
 
     h = tf.keras.layers.DepthwiseConv2D(kernel_size=1, use_bias=False,
-                                        depthwise_regularizer=l1_l2, activity_regularizer=l1)(h)
-    h = InstanceNormalization()(tf.multiply(h, first_grad))  # [256, 256, 64]
+                                        depthwise_regularizer=l1_l2, activity_regularizer=l1, name="conv_en_2")(h)
+    h = InstanceNormalization()(tf.multiply(h, first_grad))  # [256, 256, 64]   [1, 1, 64, 1]
     h = tf.keras.layers.ReLU()(h)
     
-    h = tf.keras.layers.Conv2D(filters=128, kernel_size=3, strides=2, padding="same", use_bias=False,
-                               kernel_regularizer=l1_l2, activity_regularizer=l1)(h)
+    h = tf.keras.layers.Conv2D(filters=128, kernel_size=3, strides=2, padding="same", use_bias=True,
+                               kernel_regularizer=l1_l2, activity_regularizer=l1, name="conv_en_3")(h)
     h = InstanceNormalization()(h)  # [128, 128, 128]
     h = tf.keras.layers.ReLU()(h)
 
     h = tf.keras.layers.DepthwiseConv2D(kernel_size=1, use_bias=False,
-                                        depthwise_regularizer=l1_l2, activity_regularizer=l1)(h)
+                                        depthwise_regularizer=l1_l2, activity_regularizer=l1, name="conv_en_4")(h)
     h = InstanceNormalization()(tf.multiply(h, second_grad))  # [128, 128, 128]
     h = tf.keras.layers.ReLU()(h)
 
-    h = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=2, padding="same", use_bias=False,
-                               kernel_regularizer=l1_l2, activity_regularizer=l1)(h)
+    h = tf.keras.layers.Conv2D(filters=256, kernel_size=3, strides=2, padding="same", use_bias=True,
+                               kernel_regularizer=l1_l2, activity_regularizer=l1, name="conv_en_5")(h)
     h = InstanceNormalization()(h)  # [64, 64, 256]
     h = tf.keras.layers.ReLU()(h)
 
     h = tf.keras.layers.DepthwiseConv2D(kernel_size=1, use_bias=False,
-                                        depthwise_regularizer=l1_l2, activity_regularizer=l1)(h)
+                                        depthwise_regularizer=l1_l2, activity_regularizer=l1, name="conv_en_6")(h)
     h = InstanceNormalization()(tf.multiply(h, third_grad))  # [64, 64, 256]
 
     for i in range(1, 5):
